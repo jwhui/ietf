@@ -1,0 +1,224 @@
+
+
+
+
+Internet Engineering Task Force                                   J. Hui
+Internet-Draft                                                Google LLC
+Intended status: Standards Track                             7 July 2022
+Expires: 8 January 2023
+
+
+        Stub Router Flag in ICMPv6 Router Advertisement Messages
+                    draft-hui-stub-router-ra-flag-00
+
+Abstract
+
+   This document defines a new Stub Router flag in the Router
+   Advertisement message to distinguish configuration information sent
+   by stub routers from infrastructure routers.  For example, the Stub
+   Router flag allows stub routers to easily identify when an
+   infrastructure router is advertising a usable IPv6 prefix, triggering
+   the stub router to not advertise its own routable prefix.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 8 January 2023.
+
+Copyright Notice
+
+   Copyright (c) 2022 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+
+
+Hui                      Expires 8 January 2023                 [Page 1]
+
+Internet-Draft             Stub Router RA Flag                 July 2022
+
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   2
+   3.  Stub Router Flag  . . . . . . . . . . . . . . . . . . . . . .   3
+   4.  Router Advertisement Transmission . . . . . . . . . . . . . .   3
+   5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   3
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   3
+   7.  Normative References  . . . . . . . . . . . . . . . . . . . .   3
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   4
+
+1.  Introduction
+
+   A stub router provides IP connectivity between a stub network and an
+   infrastructure network.  A common stub router example is a device
+   that attaches a 6LoWPAN-based network to a home network.
+
+   To support IPv6 reachability between infrastructure network devices
+   and stub network devices, routable IPv6 addresses must be configured
+   on both the infrastructure and stub networks.  Routers on the
+   infrastructure network may configure routable IPv6 prefixes using
+   Router Advertisements (RAs) containing Prefix Information Options
+   (PIOs) [RFC4861].
+
+   In cases where the infrastructure network does not provide routable
+   IPv6 address configuration, the stub router is responsible for
+   configuring routable IPv6 addresses on the infrastructure network.
+   If a stub router determines that routable IPv6 addresses are not
+   available on the infrastructure link, it will locally generate a
+   Unique Local Address (ULA) Prefix [RFC4193] and begin advertising
+   that via a PIO contained in RA messages.
+
+   Both infrastructure routers and stub routers may advertise routable
+   IPv6 prefixes in the same way (via RAs containing PIOs).  To
+   distinguish between an infrastructure router and a stub router, this
+   document defines a new Stub Router flag in the RA message.  The Stub
+   Router flag allows stub routers to easily identify when an
+   infrastructure router is advertising a routable IPv6 prefix,
+   triggering the stub router to stop advertising its ULA prefix.
+
+2.  Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in BCP
+   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+
+
+
+Hui                      Expires 8 January 2023                 [Page 2]
+
+Internet-Draft             Stub Router RA Flag                 July 2022
+
+
+3.  Stub Router Flag
+
+   This document defines a new "Stub Router" flag as flag bit 8 in the
+   Router Advertisement flags field.  Setting the Stub Router flag
+   requires use of the RA Flags Extension Option [RFC5175] to encode the
+   flag.
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Type      |    Length     |S|       Bit fields available ..
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   ... for assignment                                              |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                        Figure 1: TCP Header Format
+
+4.  Router Advertisement Transmission
+
+   A stub router that is not explicitly configured as part of the
+   infrastructure network MUST set the Stub Router flag in outgoing RA
+   messages.
+
+   How and when a stub router includes PIOs in outgoing RAs is specified
+   in [I-D.lemon-stub-networks].
+
+5.  IANA Considerations
+
+   IANA is requested to allocate a flag from the "IPv6 ND Router
+   Advertisement flags" registry of [RFC5175], as specified below:
+
+         +---------------+----------------------+---------------+
+         | RA Option Bit | Description          | Reference     |
+         +---------------+----------------------+---------------+
+         | 8             | S - Stub Router Flag | This Document |
+         +---------------+----------------------+---------------+
+
+                                 Table 1
+
+   Note that RA Option Bit 8 requires use of the RA Flags Extension
+   Option [RFC5175] to encode the flag.
+
+6.  Security Considerations
+
+   This protocol shares the security issues of NDP that are documented
+   in the "Security Considerations" section of [RFC4861].
+
+7.  Normative References
+
+
+
+Hui                      Expires 8 January 2023                 [Page 3]
+
+Internet-Draft             Stub Router RA Flag                 July 2022
+
+
+   [I-D.lemon-stub-networks]
+              Lemon, T., "Connecting Stub Networks to Existing
+              Infrastructure", Work in Progress, Internet-Draft, draft-
+              lemon-stub-networks-03, 25 April 2022,
+              <https://datatracker.ietf.org/doc/html/draft-lemon-stub-
+              networks-03>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC4193]  Hinden, R. and B. Haberman, "Unique Local IPv6 Unicast
+              Addresses", RFC 4193, DOI 10.17487/RFC4193, October 2005,
+              <https://www.rfc-editor.org/info/rfc4193>.
+
+   [RFC4861]  Narten, T., Nordmark, E., Simpson, W., and H. Soliman,
+              "Neighbor Discovery for IP version 6 (IPv6)", RFC 4861,
+              DOI 10.17487/RFC4861, September 2007,
+              <https://www.rfc-editor.org/info/rfc4861>.
+
+   [RFC5175]  Haberman, B., Ed. and R. Hinden, "IPv6 Router
+              Advertisement Flags Option", RFC 5175,
+              DOI 10.17487/RFC5175, March 2008,
+              <https://www.rfc-editor.org/info/rfc5175>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+Author's Address
+
+   Jonathan Hui
+   Google LLC
+   1600 Amphitheatre Parkway
+   Mountain View, California 940432
+   United States of America
+   Email: jonhui@google.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hui                      Expires 8 January 2023                 [Page 4]
