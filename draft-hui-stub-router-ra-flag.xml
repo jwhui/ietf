@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE rfc SYSTEM "rfc2629-xhtml.ent">
-<rfc category="std" submissionType="IETF" docName="draft-hui-stub-router-ra-flag-00" ipr="trust200902"
+<rfc category="std" submissionType="IETF" docName="draft-hui-stub-router-ra-flag-02" ipr="trust200902"
      xmlns:xi="http://www.w3.org/2001/XInclude" version="3"
      sortRefs="true" symRefs="true" tocDepth="3" tocInclude="true" xml:lang="en">
   <front>
@@ -21,12 +21,12 @@
       </address>
     </author>
 
-    <date year='2022'/>
+    <date year='2024'/>
     <area>Internet</area>
     <workgroup>Internet Engineering Task Force</workgroup>
 
     <abstract>
-      <t>This document defines a new Stub Router flag in the Router Advertisement message to distinguish configuration information sent by stub routers from infrastructure routers. For example, the Stub Router flag allows stub routers to easily identify when an infrastructure router is advertising a usable IPv6 prefix, triggering the stub router to not advertise its own routable prefix.</t>
+      <t>This document defines a new Stub Router flag in the Router Advertisement message that can be used to distinguish configuration information sent by stub routers from information sent by infrastructure routers.</t>
     </abstract>
   </front>
 
@@ -36,11 +36,11 @@
 
       <t>A stub router provides IP connectivity between a stub network and an infrastructure network. A common stub router example is a device that attaches a 6LoWPAN-based network to a home network.</t>
 
-      <t>To support IPv6 reachability between infrastructure network devices and stub network devices, routable IPv6 addresses must be configured on both the infrastructure and stub networks. Routers on the infrastructure network may configure routable IPv6 prefixes using Router Advertisements (RAs) containing Prefix Information Options (PIOs) <xref target="RFC4861"/>.</t>
+      <t>To support IPv6 reachability between infrastructure network devices and stub network devices, routable IPv6 addresses must be configured on both the infrastructure and stub networks. Stub routers decide whether or not to advertise their ULA prefixes <xref target="RFC4193"/> on the infrastructure network to which they are connected by tracking the presence of infrastructure-provided IPv6 service. When a stub router sees a new prefix advertised on infrastructure, this prefix may be coming from an infrastructure router, or from another stub router. In the second case, the two stub routers could wind up in a cycle of publishing and deprecating their prefixes as they see prefixes from the other stub router show up.</t>
 
-      <t>In cases where the infrastructure network does not provide routable IPv6 address configuration, the stub router is responsible for configuring routable IPv6 addresses on the infrastructure network. If a stub router determines that routable IPv6 addresses are not available on the infrastructure link, it will locally generate a Unique Local Address (ULA) Prefix <xref target="RFC4193"/> and begin advertising that via a PIO contained in RA messages.</t>
+      <t>The stub router document <xref target="I-D.ietf-snac-simple"/> explains how two stub routers decide which one has precedence in the event of a conflict. However, the infrastructure prefix always has precedence over a prefix provided by any stub router. In order to differentiate between prefixes advertised by infrastructure and those advertised by stub routers, it is necessary to be able to mark RAs sent by stub routers.</t>
 
-      <t>Both infrastructure routers and stub routers may advertise routable IPv6 prefixes in the same way (via RAs containing PIOs). To distinguish between an infrastructure router and a stub router, this document defines a new Stub Router flag in the RA message. The Stub Router flag allows stub routers to easily identify when an infrastructure router is advertising a routable IPv6 prefix, triggering the stub router to stop advertising its ULA prefix.</t>
+      <t>Additionally, the RA header includes M and O flags that indicate whether DHCPv6 is available on the link. <xref target="RFC4861" section="6.3.4"/> specifies that hosts consider the most recently received information as authoritative. As a result, stub routers must mirror the M and O values in RAs received from infrastructure routers. The Stub Router flag allows stub routers to easily identify which RAs are sent by infrastructure routers.</t>
     </section>
 
     <section>
@@ -52,30 +52,40 @@
     <section>
       <name>Stub Router Flag</name>
 
-      <t>This document defines a new "Stub Router" flag as flag bit 8 in the Router Advertisement flags field. Setting the Stub Router flag requires use of the RA Flags Extension Option <xref target="RFC5175"/> to encode the flag.</t>
+      <t>This document defines a new "Stub Router" flag as flag bit 6 in the Router Advertisement flags field.</t>
 
       <figure>
-        <name>TCP Header Format</name>
+        <name>outer Advertisement Message Format</name>
         <artset>
-          <artwork alt="TCP Header from RFC 793" type="ascii-art">
+          <artwork alt="outer Advertisement Message Format" type="ascii-art">
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     Type      |    Length     |S|       Bit fields available ..
+|     Type      |     Code      |          Checksum             |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-... for assignment                                              |
+| Cur Hop Limit |M|O|H|Prf|P|S|R|       Router Lifetime         |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Reachable Time                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Retrans Timer                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Options ...
++-+-+-+-+-+-+-+-+-+-+-+-
           </artwork>
         </artset>
       </figure>
+
+      <t>The S flag is the "Stub Router" flag.</t>
+
+      <t>The M, O, H, Prf, P, and R flags are as defined in <xref target="RFC5175"/>.</t>
     </section>
 
     <section>
       <name>Router Advertisement Transmission</name>
-      
+
       <t>A stub router that is not explicitly configured as part of the infrastructure network MUST set the Stub Router flag in outgoing RA messages.</t>
 
-      <t>How and when a stub router includes PIOs in outgoing RAs is specified in <xref target="I-D.lemon-stub-networks"/>.</t>
+      <t>How and when a stub router sets the M and O flags in outgoing RAs is specified in <xref target="I-D.ietf-snac-simple"/>.</t>
     </section>
 
     <section>
@@ -91,14 +101,12 @@
             <td>Reference</td>
           </tr>
           <tr>
-            <td>8</td>
+            <td>6</td>
             <td>S - Stub Router Flag</td>
             <td>This Document</td>
           </tr>
         </tbody>
       </table>
-
-      <t>Note that RA Option Bit 8 requires use of the RA Flags Extension Option <xref target="RFC5175"/> to encode the flag.</t>
     </section>
 
     <section>
@@ -111,7 +119,7 @@
   <back>
     <references>
       <name>Normative References</name>
-      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.draft-lemon-stub-networks.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-snac-simple.xml"/>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4193.xml"/>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4861.xml"/>
