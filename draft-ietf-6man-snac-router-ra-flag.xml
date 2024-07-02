@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE rfc>
+<rfc category="std" submissionType="IETF" docName="draft-ietf-6man-snac-router-ra-flag-00" ipr="trust200902"
+     xmlns:xi="http://www.w3.org/2001/XInclude" version="3"
+     sortRefs="true" symRefs="true" tocDepth="3" tocInclude="true" xml:lang="en">
+  <front>
+    <title abbrev="SNAC Router RA Flag">
+      SNAC Router Flag in ICMPv6 Router Advertisement Messages
+    </title>
+    <author initials="J" surname="Hui" fullname="Jonathan Hui">
+      <organization>Google LLC</organization>
+      <address>
+        <postal>
+          <street>1600 Amphitheatre Parkway</street>
+          <city>Mountain View</city>
+          <region>California</region>
+          <code>940432</code>
+          <country>US</country>
+        </postal>
+        <email>jonhui@google.com</email>
+      </address>
+    </author>
+
+    <date year='2024'/>
+    <area>Internet</area>
+    <workgroup>Internet Engineering Task Force</workgroup>
+
+    <abstract>
+      <t>This document defines a new flag, the SNAC Router flag, in the Router Advertisement message that can be used to distinguish configuration information sent by SNAC routers from information sent by infrastructure routers. This flag is used only by SNAC routers and is ignored by all other devices.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section>
+      <name>Introduction</name>
+
+      <t>A Stub Network Auto Configuration for IPv6 (SNAC) router is an autonomously-configuring router that provides IP connectivity between one or more stub networks and one or more infrastructure networks. A common SNAC router example is a device that attaches a 6LoWPAN-based network to a home network, automatically providing IPv6 forwarding between the two networks without explicit operator configuration. SNAC routers are described in <xref target="I-D.ietf-snac-simple"/>. This document defines a new RA flag, the "SNAC router" flag, which SNAC routers use to identify RAs sent by other SNAC routers.</t>
+    </section>
+
+    <section>
+      <name>Terminology</name>
+
+      <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 <xref target="RFC2119"/> <xref target="RFC8174"/> when, and only when, they appear in all capitals, as shown here.</t>
+    </section>
+
+    <section>
+      <name>SNAC Router Flag</name>
+
+      <t>The "SNAC Router" flag is router advertisement flag bit TBD.</t>
+
+      <t>The SNAC router flag is to be used by SNAC routers. The use of this flag is documented in <xref target="I-D.ietf-snac-simple"/>. Devices that do not implement <xref target="I-D.ietf-snac-simple"/> MUST NOT set the SNAC router flag, and MUST silently ignore the SNAC router flag. This means that the presence or absence of the flag should not change the behavior of such devices in any way (other than that it is of course permissible to log and cache the value of the flag as part of normal router advertisement processing, where applicable.</t>
+
+    </section>
+
+    <section>
+      <name>IANA Considerations</name>
+
+      <t>IANA is requested to allocate a flag from the "IPv6 ND Router Advertisement flags" registry of <xref target="RFC5175"/>, as specified below:</t>
+
+      <table>
+        <tbody>
+          <tr>
+            <td>RA Option Bit</td>
+            <td>Description</td>
+            <td>Reference</td>
+          </tr>
+          <tr>
+            <td>TBD</td>
+            <td>S - SNAC Router Flag</td>
+            <td>This Document</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <name>Security Considerations</name>
+      <t>This protocol shares the security issues of NDP that are documented in the "Security Considerations" section of <xref target="RFC4861"/>.</t>
+    </section>
+  </middle>
+
+  <back>
+    <references>
+      <name>Normative References</name>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-snac-simple.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4861.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.5175.xml"/>
+      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
+    </references>
+  </back>
+</rfc>
