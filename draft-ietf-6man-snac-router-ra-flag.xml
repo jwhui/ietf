@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE rfc>
-<rfc category="std" submissionType="IETF" docName="draft-ietf-6man-snac-router-ra-flag-00" ipr="trust200902"
+<rfc category="std" submissionType="IETF" docName="draft-ietf-6man-snac-router-ra-flag-02" ipr="trust200902"
      xmlns:xi="http://www.w3.org/2001/XInclude" version="3"
      sortRefs="true" symRefs="true" tocDepth="3" tocInclude="true" xml:lang="en">
   <front>
@@ -34,7 +34,7 @@
     <section>
       <name>Introduction</name>
 
-      <t>A Stub Network Auto Configuration for IPv6 (SNAC) router is an autonomously-configuring router that provides IP connectivity between one or more stub networks and one or more infrastructure networks. A common SNAC router example is a device that attaches a 6LoWPAN-based network to a home network, automatically providing IPv6 forwarding between the two networks without explicit operator configuration. SNAC routers are described in <xref target="I-D.ietf-snac-simple"/>. This document defines a new RA flag, the "SNAC router" flag, which SNAC routers use to identify RAs sent by other SNAC routers.</t>
+      <t>A Stub Network Auto-Configuring Router (SNAC) router is an autonomously-configuring router that provides IP connectivity between one or more stub networks and one or more infrastructure networks. A common SNAC router example is a device that attaches a 6LoWPAN-based network to a home network, automatically providing IPv6 forwarding between the two networks without explicit operator configuration. SNAC routers are described in <xref target="I-D.ietf-snac-simple"/>. This document defines a new IPv6 ND Router Advertisement (RA) flag, the "SNAC router" flag, which SNAC routers use to identify RAs sent by other SNAC routers.</t>
     </section>
 
     <section>
@@ -48,14 +48,16 @@
 
       <t>The "SNAC Router" flag is router advertisement flag bit TBD.</t>
 
-      <t>The SNAC router flag is to be used by SNAC routers. The use of this flag is documented in <xref target="I-D.ietf-snac-simple"/>. Devices that do not implement <xref target="I-D.ietf-snac-simple"/> MUST NOT set the SNAC router flag, and MUST silently ignore the SNAC router flag. This means that the presence or absence of the flag should not change the behavior of such devices in any way (other than that it is of course permissible to log and cache the value of the flag as part of normal router advertisement processing, where applicable.</t>
+      <t>The SNAC router flag is to be used by SNAC routers. The use of this flag is documented in <xref target="I-D.ietf-snac-simple"/>. Devices that do not operate as SNAC routers <xref target="I-D.ietf-snac-simple"/> MUST NOT set the SNAC router flag, and MUST silently ignore the SNAC router flag. This means that the presence or absence of the flag should not change the behavior of such devices in any way (other than that it is of course permissible to log and cache the value of the flag as part of normal router advertisement processing, where applicable).</t>
+
+      <t>In environments that implement RA guard in a way that filters RAs sent by SNAC routers, devices on the infrastructure network should never receive an RA with the SNAC router flag set.</t>
 
     </section>
 
     <section>
       <name>IANA Considerations</name>
 
-      <t>IANA is requested to allocate a flag from the "IPv6 ND Router Advertisement flags" registry of <xref target="RFC5175"/>, as specified below:</t>
+      <t>IANA is requested to allocate a flag from the "Internet Control Message Protocol version 6 (ICMPv6) Parameters", "IPv6 ND Router Advertisement flags" registry <xref target="IANA-RA-FLAGS"/> as specified below:</t>
 
       <table>
         <tbody>
@@ -75,17 +77,22 @@
 
     <section>
       <name>Security Considerations</name>
-      <t>This protocol shares the security issues of NDP that are documented in the "Security Considerations" section of <xref target="RFC4861"/>.</t>
+      <t>The security considerations of IPv6 ND are documented in the "Security Considerations" section of <xref target="RFC4861"/>. The addition of the SNAC router flag does not changes these considerations.</t>
     </section>
   </middle>
 
   <back>
     <references>
       <name>Normative References</name>
+      <reference anchor="IANA-RA-FLAGS" target="https://www.iana.org/assignments/icmpv6-parameters/icmpv6-parameters.xhtml#icmpv6-parameters-11">
+	<front>
+	  <title>IPv6 ND Router Advertisement flags</title>
+	  <author fullname="IANA"/>
+	</front>
+      </reference>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-snac-simple.xml"/>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.4861.xml"/>
-      <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.5175.xml"/>
       <xi:include href="https://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
     </references>
   </back>
